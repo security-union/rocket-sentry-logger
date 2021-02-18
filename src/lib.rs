@@ -8,12 +8,12 @@
 extern crate rocket;
 extern crate sentry;
 
-mod fairing;
+pub mod fairing;
 mod steps;
 
-use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
 use sentry::{Breadcrumb, ClientOptions};
+use fairing::LoggerFairing;
 /// Sentry Log level & User config
 pub use sentry::{Level as LogLevel, User};
 pub use steps::{Step, StepType};

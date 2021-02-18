@@ -3,6 +3,13 @@ name = "rocket_sentry_logger"
 version = "0.1.0"
 authors = ["Víctor Martínez <victorcoder2@gmail.com>"]
 edition = "2018"
+description = "A Logger wrapper to integrate the Sentry SDK on a Rocket Server"
+readme = "README.md"
+license = "Apache-2.0"
+keywords = ["rocket", "sentry", "logging", "errors", "server"]
+categories = ["development-tools::debugging", "web-programming::http-server"]
+repository = "https://github.com/security-union/rocket-sentry-logger"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

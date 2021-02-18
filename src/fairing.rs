@@ -7,6 +7,8 @@ use sentry::{Breadcrumb, Level};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
+/// Rocket fairing to record requests info as sentry breadcrumbs &
+/// reports events for bad responses
 pub struct LoggerFairing;
 
 /// Implement Fairing to allow our logger

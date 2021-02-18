@@ -2,6 +2,20 @@ use sentry::{Breadcrumb, Level};
 use serde_json::value::Value;
 use std::collections::btree_map::BTreeMap;
 
+/// Represents an step done previous to an event.
+/// It gets internally converted to a sentry breadcrumb.
+///
+/// ```rust
+/// let step = Step { 
+///   ty: StepType::Error,
+///   title: "Bad request".into(),
+///   message: "Mike made a bad request".into(),
+///   level: LogLevel::Info,
+///   data: None,
+/// };
+///
+/// logger::track_step(step);
+/// ```
 pub struct Step {
     pub ty: StepType,
     pub title: String,
@@ -34,6 +48,16 @@ impl Into<Breadcrumb> for Step {
     }
 }
 
+/// It helps the step to be better represented visually in sentry.
+///
+/// ```rust
+/// let step = Step { 
+///   ty: StepType::Error,
+///   ...
+/// };
+///
+/// logger::track_step(step);
+/// ```
 pub enum StepType {
     Default,
     Error,

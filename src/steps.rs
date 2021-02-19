@@ -11,7 +11,7 @@ use std::collections::btree_map::BTreeMap;
 ///   title: "Bad request".into(),
 ///   message: "Mike made a bad request".into(),
 ///   level: LogLevel::Info,
-///   data: None,
+///   body: None,
 /// };
 ///
 /// logger::track_step(step);

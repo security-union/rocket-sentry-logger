@@ -13,10 +13,11 @@ mod steps;
 
 use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
-use sentry::{Breadcrumb, ClientOptions};
+use sentry::{Breadcrumb, ClientOptions, protocol::Event};
 /// Sentry Log level & User config
 pub use sentry::{ClientInitGuard as Guard, Level as LogLevel, User};
 pub use steps::{Step, StepType};
+use std::sync::Arc;
 
 /// Initialize a sentry client instance with the recommended sentry configuration.
 /// Reads the *SENTRY_DNS* variable from the environment to start the client
@@ -39,6 +40,12 @@ pub fn init() -> Guard {
         send_default_pii: true,
         attach_stacktrace: true,
         release: sentry::release_name!(),
+        before_send: Some(Arc::new(|mut event: Event| {
+            if event.level == LogLevel::Info {
+                event.stacktrace = None;
+            }
+            Some(event)
+        })),
         ..Default::default()
     };
     let guard = sentry::init((dsn, options));
@@ -70,7 +77,7 @@ pub fn log(message: &str, level: LogLevel) {
 ///   title: "Bad request".into(),
 ///   message: "Mike made a bad request".into(),
 ///   level: LogLevel::Info,
-///   data: None,
+///   body: None,
 /// };
 ///
 /// logger::track_step(step);

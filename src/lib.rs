@@ -11,9 +11,9 @@ extern crate sentry;
 pub mod fairing;
 mod steps;
 
+use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
 use sentry::{Breadcrumb, ClientOptions};
-use fairing::LoggerFairing;
 /// Sentry Log level & User config
 pub use sentry::{Level as LogLevel, User};
 pub use steps::{Step, StepType};
@@ -32,14 +32,14 @@ pub use steps::{Step, StepType};
 /// }
 ///```
 pub fn init() {
-    let dns = std::env::var("SENTRY_DNS").expect("SENTRY_DNS must be set");
+    let dsn = std::env::var("SENTRY_DSN").expect("SENTRY_DSN must be set");
     let options = ClientOptions {
         send_default_pii: true,
         attach_stacktrace: true,
         release: sentry::release_name!(),
         ..Default::default()
     };
-    let guard = sentry::init((dns, options));
+    let guard = sentry::init((dsn, options));
     if !guard.is_enabled() {
         panic!("Could not initialize sentry");
     }
@@ -62,7 +62,7 @@ pub fn log(message: &str, level: LogLevel) {
 /// Tracks an step to be sent along with the next logged message or event.
 ///
 /// ```rust
-/// let step = Step { 
+/// let step = Step {
 ///   ty: StepType::Error,
 ///   title: "Bad request".into(),
 ///   message: "Mike made a bad request".into(),
@@ -80,7 +80,7 @@ pub fn track_step(step: Step) {
 /// Allows you to set info about the user related with the current scope.
 ///
 /// ```rust
-/// let user = User { 
+/// let user = User {
 ///   id: Some("aslfnsvn-dsvjnfv-ffjfvkfjd"),
 ///   email: Some("jaster@mail.com"),
 ///   username: Some("Jaster"),

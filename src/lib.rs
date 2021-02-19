@@ -15,11 +15,13 @@ use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
 use sentry::{Breadcrumb, ClientOptions};
 /// Sentry Log level & User config
-pub use sentry::{Level as LogLevel, User};
+pub use sentry::{ClientInitGuard as Guard, Level as LogLevel, User};
 pub use steps::{Step, StepType};
 
 /// Initialize a sentry client instance with the recommended sentry configuration.
 /// Reads the *SENTRY_DNS* variable from the environment to start the client
+///
+/// Returns a Sentry ClientInitGuard which will stop the logging service when dropped
 ///
 /// # Panics!
 ///
@@ -31,7 +33,7 @@ pub use steps::{Step, StepType};
 ///     logger::init();
 /// }
 ///```
-pub fn init() {
+pub fn init() -> Guard {
     let dsn = std::env::var("SENTRY_DSN").expect("SENTRY_DSN must be set");
     let options = ClientOptions {
         send_default_pii: true,
@@ -43,6 +45,7 @@ pub fn init() {
     if !guard.is_enabled() {
         panic!("Could not initialize sentry");
     }
+    guard
 }
 
 /// Logs a message to sentry.

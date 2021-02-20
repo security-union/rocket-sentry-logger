@@ -13,11 +13,12 @@ mod steps;
 
 use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
-use sentry::{Breadcrumb, ClientOptions, protocol::Event};
+use sentry::{protocol::Event, Breadcrumb, ClientOptions};
 /// Sentry Log level & User config
 pub use sentry::{ClientInitGuard as Guard, Level as LogLevel, User};
-pub use steps::{Step, StepType};
+use serde_json::Value;
 use std::sync::Arc;
+pub use steps::{Step, StepType};
 
 /// Initialize a sentry client instance with the recommended sentry configuration.
 /// Reads the *SENTRY_DNS* variable from the environment to start the client
@@ -102,6 +103,30 @@ pub fn track_step(step: Step) {
 pub fn set_user(user: User) {
     sentry::configure_scope(|scope| {
         scope.set_user(Some(user));
+    })
+}
+
+/// Allows you to set extra data about the message.
+///
+/// ```rust
+/// logger::add_data("Response body", json!(body));
+/// logger::log("Bad Request: name field required", LogLevel::Error);
+/// ```
+pub fn add_data(key: &str, data: Value) {
+    sentry::configure_scope(|scope| {
+        scope.set_extra(key, data);
+    })
+}
+
+/// Allows you to set additional tags to the sentry issue.
+///
+/// ```rust
+/// logger::set_tag("API", "emergency");
+/// logger::log("Bad Request: name field required", LogLevel::Error);
+/// ```
+pub fn set_tag(name: &str, value: &str) {
+    sentry::configure_scope(|scope| {
+        scope.set_tag(name, value);
     })
 }
 

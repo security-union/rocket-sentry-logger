@@ -43,8 +43,16 @@ impl Fairing for LoggerFairing {
     /// success property which we use to report bad responses
     /// and report the body to sentry
     fn on_response(&self, _request: &Request, response: &mut Response) {
-        if response.status().code >= 400 {
-            sentry::capture_message(&response.status().reason, Level::Error);
+        let status = response.status().clone();
+        if status.code >= 400 {
+            sentry::with_scope(
+                |scope| {
+                    scope.set_extra("Response", json!(&response.body_string()));
+                },
+                || {
+                    sentry::capture_message(&format!("Response: {}", status.reason), Level::Error);
+                },
+            );
         }
     }
 }

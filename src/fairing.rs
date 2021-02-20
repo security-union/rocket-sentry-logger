@@ -5,7 +5,7 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::{Data, Request, Response};
 use sentry::{Breadcrumb, Level};
 use serde_json::{json, Value};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, io::Cursor};
 
 /// Rocket fairing to record requests info as sentry breadcrumbs &
 /// reports events for bad responses
@@ -44,15 +44,17 @@ impl Fairing for LoggerFairing {
     /// and report the body to sentry
     fn on_response(&self, _request: &Request, response: &mut Response) {
         let status = response.status().clone();
+        let body_str = response.body_string();
         if status.code >= 400 {
             sentry::with_scope(
                 |scope| {
-                    scope.set_extra("Response", json!(&response.body_string()));
+                    scope.set_extra("Response", json!(body_str.clone()));
                 },
                 || {
                     sentry::capture_message(&format!("Response: {}", status.reason), Level::Error);
                 },
             );
         }
+        response.set_sized_body(Cursor::new(body_str.unwrap_or_default()));
     }
 }

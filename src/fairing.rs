@@ -36,6 +36,9 @@ impl Fairing for LoggerFairing {
             data,
             ..Default::default()
         };
+        sentry::configure_scope(|scope| {
+            scope.clear_breadcrumbs();
+        });
         sentry::add_breadcrumb(breadcrumb);
     }
 

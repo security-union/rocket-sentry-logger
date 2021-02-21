@@ -17,8 +17,24 @@ use sentry::{protocol::Event, Breadcrumb, ClientOptions};
 /// Sentry Log level & User config
 pub use sentry::{ClientInitGuard as Guard, Level as LogLevel, User};
 use serde_json::Value;
-use std::sync::Arc;
+use std::{borrow::Cow, sync::Arc};
 pub use steps::{Step, StepType};
+
+pub struct InitConfig {
+    pub service: Option<&'static str>,
+    pub release: Option<Cow<'static, str>>,
+    pub environment: &'static str,
+}
+
+impl Default for InitConfig {
+    fn default() -> Self {
+        InitConfig {
+            service: None,
+            release: sentry::release_name!(),
+            environment: "development",
+        }
+    }
+}
 
 /// Initialize a sentry client instance with the recommended sentry configuration.
 /// Reads the *SENTRY_DNS* variable from the environment to start the client
@@ -35,16 +51,20 @@ pub use steps::{Step, StepType};
 ///     logger::init();
 /// }
 ///```
-pub fn init() -> Guard {
+pub fn init(config: Option<InitConfig>) -> Guard {
     let dsn = std::env::var("SENTRY_DSN").expect("SENTRY_DSN must be set");
+    let config = config.unwrap_or_default();
+    let service: String = config.service.unwrap_or("unknown").into();
     let options = ClientOptions {
         send_default_pii: true,
         attach_stacktrace: true,
-        release: sentry::release_name!(),
-        before_send: Some(Arc::new(|mut event: Event| {
+        release: config.release,
+        environment: Some(config.environment.into()),
+        before_send: Some(Arc::new(move |mut event: Event| {
             if event.level == LogLevel::Info {
                 event.stacktrace = None;
             }
+            event.tags.insert("Service".into(), service.clone());
             Some(event)
         })),
         ..Default::default()

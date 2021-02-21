@@ -14,12 +14,28 @@ mod steps;
 use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
 use sentry::{protocol::Event, Breadcrumb, ClientOptions};
-/// Sentry Log level & User config
-pub use sentry::{ClientInitGuard as Guard, Level as LogLevel, User};
+pub use sentry::{
+    ClientInitGuard as Guard, 
+    Level as LogLevel, 
+    User
+};
 use serde_json::Value;
 use std::{borrow::Cow, sync::Arc};
 pub use steps::{Step, StepType};
 
+/// Initial Logger configuration. Lets you configure the *service* name such as *Recipes API*, 
+/// release name & running environment.
+///
+///```rust
+/// fn main() {
+///     let config = InitConfig {
+///         service: Some("Recipes API"),
+///         environment: "Production",
+///         ..Default::default()
+///     }
+///     logger::init(Some(config));
+/// }
+///```
 pub struct InitConfig {
     pub service: Option<&'static str>,
     pub release: Option<Cow<'static, str>>,
@@ -36,7 +52,8 @@ impl Default for InitConfig {
     }
 }
 
-/// Initialize a sentry client instance with the recommended sentry configuration.
+/// Initialize a sentry client instance with the recommended sentry configuration & 
+/// additional config which can be set with the [`InitConfig`] struct.
 /// Reads the *SENTRY_DNS* variable from the environment to start the client
 ///
 /// Returns a Sentry ClientInitGuard which will stop the logging service when dropped
@@ -48,7 +65,7 @@ impl Default for InitConfig {
 ///
 ///```rust
 /// fn main() {
-///     logger::init();
+///     logger::init(None);
 /// }
 ///```
 pub fn init(config: Option<InitConfig>) -> Guard {

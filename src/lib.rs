@@ -54,7 +54,6 @@ impl Default for InitConfig {
 
 /// Initialize a sentry client instance with the recommended sentry configuration & 
 /// additional config which can be set with the [`InitConfig`] struct.
-/// Reads the *SENTRY_DNS* variable from the environment to start the client
 ///
 /// Returns a Sentry ClientInitGuard which will stop the logging service when dropped
 ///
@@ -68,8 +67,7 @@ impl Default for InitConfig {
 ///     logger::init(None);
 /// }
 ///```
-pub fn init(config: Option<InitConfig>) -> Guard {
-    let dsn = std::env::var("SENTRY_DSN").expect("SENTRY_DSN must be set");
+pub fn init(dsn: String, config: Option<InitConfig>) -> Guard {
     let config = config.unwrap_or_default();
     let service: String = config.service.unwrap_or("unknown").into();
     let options = ClientOptions {

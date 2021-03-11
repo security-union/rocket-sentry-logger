@@ -76,7 +76,7 @@ pub fn init(dsn: String, config: Option<InitConfig>) -> Guard {
         release: config.release,
         environment: Some(config.environment.into()),
         before_send: Some(Arc::new(move |mut event: Event| {
-            if event.level == LogLevel::Info {
+            if event.level != LogLevel::Fatal {
                 event.stacktrace = None;
             }
             event.tags.insert("Service".into(), service.clone());

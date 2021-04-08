@@ -14,16 +14,12 @@ mod steps;
 use fairing::LoggerFairing;
 use rocket::fairing::Fairing;
 use sentry::{protocol::Event, Breadcrumb, ClientOptions};
-pub use sentry::{
-    ClientInitGuard as Guard, 
-    Level as LogLevel, 
-    User
-};
+pub use sentry::{ClientInitGuard as Guard, Level as LogLevel, User};
 use serde_json::Value;
 use std::{borrow::Cow, sync::Arc};
 pub use steps::{Step, StepType};
 
-/// Initial Logger configuration. Lets you configure the *service* name such as *Recipes API*, 
+/// Initial Logger configuration. Lets you configure the *service* name such as *Recipes API*,
 /// release name & running environment.
 ///
 ///```rust
@@ -52,7 +48,7 @@ impl Default for InitConfig {
     }
 }
 
-/// Initialize a sentry client instance with the recommended sentry configuration & 
+/// Initialize a sentry client instance with the recommended sentry configuration &
 /// additional config which can be set with the [`InitConfig`] struct.
 ///
 /// Returns a Sentry ClientInitGuard which will stop the logging service when dropped
@@ -173,6 +169,6 @@ pub fn set_tag(name: &str, value: &str) {
 ///    .attach(logger::fairing());
 /// }
 /// ```
-pub fn fairing() -> impl Fairing {
-    LoggerFairing
+pub fn fairing(ignore_list: Option<Vec<u16>>) -> impl Fairing {
+    LoggerFairing { ignore_list }
 }

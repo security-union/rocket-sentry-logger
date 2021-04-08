@@ -9,10 +9,22 @@ use std::{collections::BTreeMap, io::Cursor};
 
 /// Rocket fairing to record requests info as sentry breadcrumbs &
 /// reports events for bad responses
-pub struct LoggerFairing;
+pub struct LoggerFairing {
+    pub ignore_list: Option<Vec<u16>>,
+}
 
 /// Implement Fairing to allow our logger
 /// report bad responses
+impl LoggerFairing {
+    fn is_ignored(&self, code: &u16) -> bool {
+        if let Some(codes) = &self.ignore_list {
+            codes.contains(code)
+        } else {
+            false
+        }
+    }
+}
+
 impl Fairing for LoggerFairing {
     fn info(&self) -> Info {
         Info {
@@ -48,7 +60,8 @@ impl Fairing for LoggerFairing {
     fn on_response(&self, _request: &Request, response: &mut Response) {
         let status = response.status().clone();
         let body_str = response.body_string();
-        if status.code >= 400 {
+
+        if status.code >= 400 && !self.is_ignored(&status.code) {
             sentry::with_scope(
                 |scope| {
                     scope.set_extra("Response", json!(body_str.clone()));
